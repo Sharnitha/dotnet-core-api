@@ -1,11 +1,10 @@
 name: Dotnetapplication
-env:
-  GH_TOKEN: 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
+
 on:
   workflow_dispatch:
-  push:
-    branches:
-    - master
+  # push:
+  #   branches:
+  #   - master
 
 jobs:
   # DotnetInstall:
