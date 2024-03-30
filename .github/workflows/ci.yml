@@ -10,18 +10,12 @@ jobs:
   DotnetInstall:
     runs-on: ubuntu-latest
     steps:
-        - uses: actions/checkout@v4
-        - uses: actions/setup-dotnet@v4
-          with:
-            dotnet-version: 6.x
-            cache: true
-        - run: dotnet restore --locked-mode
-      # - name: Checkout code
-      #   uses: actions/checkout@v4
-      # - name: Dotnet install
-      # - uses: actions/setup-dotnet@v4
-      #   with:
-      #     dotnet-version: '6.0.x'
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Dotnet install
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
           
   # Install_dependencies:
   #   runs-on: ubuntu-latest
@@ -29,8 +23,8 @@ jobs:
   #   steps:
   #      - name: Checkout code
   #        uses: actions/checkout@v4
-       - name: Installing dependency
-         run: dotnet restore
+       # - name: Installing dependency
+       #   run: dotnet restore
           
         
   
