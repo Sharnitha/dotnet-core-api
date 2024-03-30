@@ -1,6 +1,6 @@
 name: Dotnetapplication
 env:
-  GH_TOKEN: ${{ githubt }}
+  GH_TOKEN: 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
 on:
   workflow_dispatch:
   push:
