@@ -15,50 +15,51 @@ jobs:
         run: |
           wget https://download.visualstudio.microsoft.com/download/pr/b521d7d2-108b-43d9-861a-58b2505a125a/0023553690a68328b33bc30a38f151db/dotnet-sdk-6.0.420-linux-x64.tar.gz
           mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-6.0.420-linux-x64.tar.gz -C $HOME/dotnet
-          echo "export PATH=$PATH:$HOME/dotnet" >> ./bashrc
-          echo "export DOTNET_ROOT=$HOME/dotnet" >> ./bashrc
-          source .bashrc
-          dotnet --version
+          pwd
+  #         echo "export PATH=$PATH:$HOME/dotnet" >> ./bashrc
+  #         echo "export DOTNET_ROOT=$HOME/dotnet" >> ./bashrc
+  #         source .bashrc
+  #         dotnet --version
           
-  Install_dependencies:
-    runs-on: self-hosted
-    needs: DotnetInstall
-    steps:
-       - name: Installing dependency
-         run: dotnet restore
+  # Install_dependencies:
+  #   runs-on: self-hosted
+  #   needs: DotnetInstall
+  #   steps:
+  #      - name: Installing dependency
+  #        run: dotnet restore
 
-  Build_dotnet:
-    runs-on: self-hosted
-    needs: Install_dependencies
-    steps:
+  # Build_dotnet:
+  #   runs-on: self-hosted
+  #   needs: Install_dependencies
+  #   steps:
 
-       - name: Installing dependency
-         run: dotnet build --configuration Release
+  #      - name: Installing dependency
+  #        run: dotnet build --configuration Release
       
-  Publish_dotnet:
-      runs-on: self-hosted
-      needs: Build_dotnet
-      steps:
-         - name: Installing dependency
-           run: dotnet publish --configuration Release  
+  # Publish_dotnet:
+  #     runs-on: self-hosted
+  #     needs: Build_dotnet
+  #     steps:
+  #        - name: Installing dependency
+  #          run: dotnet publish --configuration Release  
            
-         - name: UploadArtifact
-           uses: actions/upload-artifact@v4.3.1
-           with:
-             name: dotnetdll
-             path: bin/Release/netcoreapp3.1/TodoApi.dll
+  #        - name: UploadArtifact
+  #          uses: actions/upload-artifact@v4.3.1
+  #          with:
+  #            name: dotnetdll
+  #            path: bin/Release/netcoreapp3.1/TodoApi.dll
 
-  Build_image:
-    runs-on: self-hosted
-    needs: Publish_dotnet
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Download Dll file
-        run: gh run download ${{ github.run_id }}
-      - name: Build Docker image
-        run: |
-          docker build -t demodotnet:${{ github.run_id }} .
+  # Build_image:
+  #   runs-on: self-hosted
+  #   needs: Publish_dotnet
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #     - name: Download Dll file
+  #       run: gh run download ${{ github.run_id }}
+  #     - name: Build Docker image
+  #       run: |
+  #         docker build -t demodotnet:${{ github.run_id }} .
           
         
   
