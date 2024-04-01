@@ -18,7 +18,7 @@ jobs:
           mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-6.0.420-linux-x64.tar.gz -C $HOME/dotnet
           echo "export PATH=$PATH:$HOME/dotnet" >> .bashrc
           echo "export DOTNET_ROOT=$HOME/dotnet" >> .bashrc
-          source .bashrc
+          source ./bashrc
           dotnet --version
           
   # Install_dependencies:
