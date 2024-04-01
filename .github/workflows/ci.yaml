@@ -11,12 +11,14 @@ jobs:
     name: Run dotnet on Ubuntu
     runs-on: self-hosted
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '3.1.x'
-    - run: dotnet build --configuration Release
-           
+      - name: install dotnet using CLI way
+        run: |
+          wget https://download.visualstudio.microsoft.com/download/pr/b521d7d2-108b-43d9-861a-58b2505a125a/0023553690a68328b33bc30a38f151db/dotnet-sdk-6.0.420-linux-x64.tar.gz
+          mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-6.0.420-linux-x64.tar.gz -C $HOME/dotnet
+          export DOTNET_ROOT=$HOME/dotnet
+          export PATH=$PATH:$HOME/dotnet
+          dotnet --version
+          
   # Install_dependencies:
   #   runs-on: ubuntu-latest
   #   needs: DotnetInstall
