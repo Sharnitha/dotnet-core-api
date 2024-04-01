@@ -21,39 +21,50 @@ jobs:
           echo "export PATH=$PATH:$HOME/dotnet" >> .bashrc
           echo "export DOTNET_ROOT=$HOME/dotnet" >> .bashrc
           source ./bashrc
-          dotnet --version
-          
-  Install_dependencies:
-    runs-on: self-hosted
-    needs: DotnetInstall
-    steps:
-       - name: Installing dependency
-         run: dotnet restore
-
-  Build_dotnet:
-    runs-on: self-hosted
-    needs: Install_dependencies
-    steps:
-
-       - name: Installing dependency
-         run: dotnet build --configuration Release
+      - name: Installing dependency
+        run: dotnet restore
+      - name: Build app
+        run: dotnet build --configuration Release
+      - name: App publish command
+        run: dotnet publish --configuration Release  
+      - name: UploadArtifact
+        uses: actions/upload-artifact@v4.3.1
+        with:
+         name: dotnetdll
+         path: bin/Release/netcoreapp3.1/TodoApi.dll
       
-  Publish_dotnet:
-      runs-on: self-hosted
-      needs: Build_dotnet
-      steps:
-         - name: Installing dependency
-           run: dotnet publish --configuration Release  
-           
-         - name: UploadArtifact
-           uses: actions/upload-artifact@v4.3.1
-           with:
-             name: dotnetdll
-             path: bin/Release/netcoreapp3.1/TodoApi.dll
+          
+  # Install_dependencies:
+  #   runs-on: self-hosted
+  #   needs: DotnetInstall
+  #   steps:
+  #      - name: Installing dependency
+  #        run: dotnet restore
+
+  # Build_dotnet:
+  #   runs-on: self-hosted
+  #   needs: Install_dependencies
+  #   steps:
+
+  #      - name: Installing dependency
+  #        run: dotnet build --configuration Release
+      
+  # Publish_dotnet:
+  #     runs-on: self-hosted
+  #     needs: Build_dotnet
+  #     steps:
+  #        - name: Installing dependency
+  #          run: dotnet publish --configuration Release  
+# UploadArtifacts:    
+#   - name: UploadArtifact
+#     uses: actions/upload-artifact@v4.3.1
+#    with:
+#      name: dotnetdll
+#      path: bin/Release/netcoreapp3.1/TodoApi.dll
 
   Build_image:
     runs-on: self-hosted
-    needs: Publish_dotnet
+    needs: DotnetInstall
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
