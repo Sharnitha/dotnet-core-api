@@ -5,74 +5,113 @@ on:
   push:
     branches:
     - master
-    paths:
-    - Controllers/**
+    # paths:
+    # - Controllers/**
 # jobs: jobname--> steps: - name: change directory working-directory: ./<foldername>, so in upcoming steps you don't need to switch directory.
+
 jobs:
-  DotnetInstall:
-    name: Run dotnet on Ubuntu
-    runs-on: self-hosted
+  build:
+    name: Build
+    runs-on: windows-latest
     steps:
-      - name: install dotnet using CLI way
-        run: |
-          cd ~
-          wget https://download.visualstudio.microsoft.com/download/pr/b521d7d2-108b-43d9-861a-58b2505a125a/0023553690a68328b33bc30a38f151db/dotnet-sdk-6.0.420-linux-x64.tar.gz
-          mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-6.0.420-linux-x64.tar.gz -C $HOME/dotnet
-          echo "export PATH=$PATH:$HOME/dotnet" >> .bashrc
-          echo "export DOTNET_ROOT=$HOME/dotnet" >> .bashrc
-          source ./bashrc
-      - name: Installing dependency
-        run: dotnet restore
-      - name: Build app
-        run: dotnet build --configuration Release
-      - name: App publish command
-        run: dotnet publish --configuration Release  
-      - name: UploadArtifact
-        uses: actions/upload-artifact@v4.3.1
+      - uses: actions/checkout@v2
         with:
-         name: dotnetdll
-         path: bin/Release/netcoreapp3.1/TodoApi.dll
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.11
+      - name: Cache SonarQube packages
+        uses: actions/cache@v1
+        with:
+          path: ~\sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache SonarQube scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v1
+        with:
+          path: .\.sonar\scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+      - name: Install SonarQube scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          New-Item -Path .\.sonar\scanner -ItemType Directory
+          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          shell: powershell
+        run: |
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"dotnet" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+          dotnet build
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+#   DotnetInstall:
+#     name: Run dotnet on Ubuntu
+#     runs-on: self-hosted
+#     steps:
+#       - name: install dotnet using CLI way
+#         run: |
+#           cd ~
+#           wget https://download.visualstudio.microsoft.com/download/pr/b521d7d2-108b-43d9-861a-58b2505a125a/0023553690a68328b33bc30a38f151db/dotnet-sdk-6.0.420-linux-x64.tar.gz
+#           mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-6.0.420-linux-x64.tar.gz -C $HOME/dotnet
+#           echo "export PATH=$PATH:$HOME/dotnet" >> .bashrc
+#           echo "export DOTNET_ROOT=$HOME/dotnet" >> .bashrc
+#           source ./bashrc
+#       - name: Installing dependency
+#         run: dotnet restore
+#       - name: Build app
+#         run: dotnet build --configuration Release
+#       - name: App publish command
+#         run: dotnet publish --configuration Release  
+#       - name: UploadArtifact
+#         uses: actions/upload-artifact@v4.3.1
+#         with:
+#          name: dotnetdll
+#          path: bin/Release/netcoreapp3.1/TodoApi.dll
       
           
-  # Install_dependencies:
-  #   runs-on: self-hosted
-  #   needs: DotnetInstall
-  #   steps:
-  #      - name: Installing dependency
-  #        run: dotnet restore
+#   # Install_dependencies:
+#   #   runs-on: self-hosted
+#   #   needs: DotnetInstall
+#   #   steps:
+#   #      - name: Installing dependency
+#   #        run: dotnet restore
 
-  # Build_dotnet:
-  #   runs-on: self-hosted
-  #   needs: Install_dependencies
-  #   steps:
+#   # Build_dotnet:
+#   #   runs-on: self-hosted
+#   #   needs: Install_dependencies
+#   #   steps:
 
-  #      - name: Installing dependency
-  #        run: dotnet build --configuration Release
+#   #      - name: Installing dependency
+#   #        run: dotnet build --configuration Release
       
-  # Publish_dotnet:
-  #     runs-on: self-hosted
-  #     needs: Build_dotnet
-  #     steps:
-  #        - name: Installing dependency
-  #          run: dotnet publish --configuration Release  
-# UploadArtifacts:    
-#   - name: UploadArtifact
-#     uses: actions/upload-artifact@v4.3.1
-#    with:
-#      name: dotnetdll
-#      path: bin/Release/netcoreapp3.1/TodoApi.dll
+#   # Publish_dotnet:
+#   #     runs-on: self-hosted
+#   #     needs: Build_dotnet
+#   #     steps:
+#   #        - name: Installing dependency
+#   #          run: dotnet publish --configuration Release  
+# # UploadArtifacts:    
+# #   - name: UploadArtifact
+# #     uses: actions/upload-artifact@v4.3.1
+# #    with:
+# #      name: dotnetdll
+# #      path: bin/Release/netcoreapp3.1/TodoApi.dll
 
-  Build_image:
-    runs-on: self-hosted
-    needs: DotnetInstall
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Download Dll file
-        run: gh run download ${{ github.run_id }}
-      - name: Build Docker image
-        run: |
-          docker build -t demodotnet:${{ github.run_id }} .
+#   Build_image:
+#     runs-on: self-hosted
+#     needs: DotnetInstall
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+#       - name: Download Dll file
+#         run: gh run download ${{ github.run_id }}
+#       - name: Build Docker image
+#         run: |
+#           docker build -t demodotnet:${{ github.run_id }} .
           
         
   
